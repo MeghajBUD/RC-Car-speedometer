@@ -1,0 +1,52 @@
+#include <xc.h>
+
+// Configuration Bits
+#pragma config OSC = XT         // Crystal oscillator
+#pragma config PWMPIN = 0       // PWM pins as output on reset
+#pragma config MCLRE = ON       // MCLR pin enabled
+#pragma config LVP = OFF        // Low voltage programming off
+
+#define _XTAL_FREQ 4000000      // 4 MHz crystal
+
+// ?? Pin Definitions ???????????????????????????????????????
+#define LED1        LATAbits.LATA0   // Pin 2  ? LED on when magnet detected
+#define LED2        LATAbits.LATA1   // Pin 3  ? LED on when no magnet
+#define HALL_PIN    PORTBbits.RB0    // IC1
+
+void main(void) {
+    // ?? All digital ? no ADC needed ???????????????????????
+    ANSEL0 = 0x00;
+    ANSEL1 = 0x00;
+
+    // ?? PORTA config ??????????????????????????????????????
+    TRISAbits.TRISA0 = 0;    // Pin 2  ? LED1 output
+    LATAbits.LATA0   = 0;
+    TRISAbits.TRISA1 = 0;    // Pin 3  ? LED2 output
+    LATAbits.LATA1   = 0;
+    TRISBbits.TRISB0 = 1;    // Pin 4  ? Hall sensor input
+
+    // ?? Startup blink ? confirms PIC is running ???????????
+//    unsigned char i;
+//    for(i = 0; i < 3; i++) {
+//        LED1 = 1;
+//        LED2 = 1;
+//        __delay_ms(300);
+//        LED1 = 0;
+//        LED2 = 0;
+//        __delay_ms(300);
+//    }
+
+    // ?? Main Loop ?????????????????????????????????????????
+    while(1) {
+        if(HALL_PIN == 0) {
+            // Magnet detected ? US5881 pulls output LOW
+            LED1 = 1;        // LED1 on
+            LED2 = 0;        // LED2 off
+        } else {
+            // No magnet ? pull-up holds output HIGH
+            LED1 = 0;        // LED1 off
+            LED2 = 1;        // LED2 on
+        }
+           
+    }
+}
