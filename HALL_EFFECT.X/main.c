@@ -24,8 +24,8 @@ void get_velocity(uint16_t cycle_time)
     uint32_t total_ticks = ((uint32_t)overflow_count << 16) + cycle_time;
     period_seconds = (float)total_ticks / TICK_RATE_HZ;
     rpm = (period_seconds > 0.0f) ? 60.0f / period_seconds : 0.0f;
-    velocity = (2 * 3.14 * 0.01778)/ 60.00;
-    printf("Period: %.4f s | RPM: %.2f\r\n | Velocity m/s : %.2f\r\n", (double)period_seconds, (double)rpm, (double)velocity);
+    velocity = (2 * 3.14 * 0.01778 * rpm)/ 60.0;
+    printf("Period: %.4f s | RPM: %.2f\r\n | Velocity m/s : %.2f\r\n", period_seconds, rpm, velocity);
 }
 
 void TMR1_OverflowCallback(void) {
@@ -50,7 +50,7 @@ int main(void) {
             if (!sensor_was_low){
                 
                 current_cycle_time =TMR1_Counter16BitGet();
-                if (current_cycle_time < 10000) get_velocity(current_cycle_time);
+                get_velocity(current_cycle_time);
             }
             TMR1_Counter16BitSet(0);
             overflow_count = 0;
