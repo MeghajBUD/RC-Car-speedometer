@@ -1,20 +1,18 @@
+#ifndef FCY
+#define FCY 1840000UL
+#endif
 #include "mcc_generated_files/system.h"
 #include "mcc_generated_files/tmr1.h"
-
+#include <xc.h>
+#include <libpic30.h>
+#include "mcc_generated_files/system.h"
+#include "oled_copy.h"
 #define HALL_PIN        PORTBbits.RB15
 #define TICK_RATE_HZ    230312.5f
 
 volatile uint16_t overflow_count = 0;
 
-///* Simple blocking delay — counts down instruction cycles */
-static void delay_ms(uint16_t ms)
-{
-    uint16_t i, j;
-    /* At FCY ~1.84 MHz, ~1840 iterations ≈ 1 ms */
-    for (i = 0; i < ms; i++)
-        for (j = 0; j < 460; j++)
-            Nop();
-}
+
 
 void get_velocity(uint16_t cycle_time)
 {
@@ -25,7 +23,10 @@ void get_velocity(uint16_t cycle_time)
     period_seconds = (float)total_ticks / TICK_RATE_HZ;
     rpm = (period_seconds > 0.0f) ? 60.0f / period_seconds : 0.0f;
     velocity = (2 * 3.14 * 0.01778 * rpm)/ 60.0;
-    printf("Period: %.4f s | RPM: %.2f\r\n | Velocity m/s : %.2f\r\n", period_seconds, rpm, velocity);
+    //printf("Period: %.4f s | RPM: %.2f\r\n | Velocity m/s : %.2f\r\n", period_seconds, rpm, velocity);
+    oled_printf1("SP: %.1f\r\n", velocity);
+    oled_printf2("RPM: %.1f\r\n", rpm);
+    //add oled display code
 }
 
 void TMR1_OverflowCallback(void) {
@@ -36,9 +37,10 @@ int main(void) {
     
     SYSTEM_Initialize();
     TMR1_Initialize();
+    oled_init();    //oled initalize
     TMR1_SetInterruptHandler(TMR1_OverflowCallback);
     TMR1_Start();
-
+        
     bool sensor_was_low = false;
     uint16_t current_cycle_time; 
 
